@@ -19,6 +19,7 @@ def parse_automata(sorok):
 
     return kezdo_lista, veg_lista, atmenet_lista
 
+# pl (1, 2): a
 def csoportosit_atmenetek(atmenet_lista):
     csoport = {}
 
@@ -38,37 +39,38 @@ def csoportosit_atmenetek(atmenet_lista):
 
 def generate_dot(kezdo_lista, veg_lista, atmenet_csoport):
     kimenet = []
-    # egy iranyitott graf
-    kimenet.append('digraph finite_state_machine {')
-    # vizszintes iranyu elrendezes
-    kimenet.append('    rankdir=LR;')
-    # grafikon merete
-    kimenet.append('    size="8,5"')
 
-    veg_str = ' '.join(veg_lista)
-    # vegallapot dupla korrel
-    kimenet.append(f'    node [shape = doublecircle]; {veg_str};')
-    # osszes allapot amely nem vegallapot sima kor
-    kimenet.append('    node [shape = circle];')
-
-    # atmenetek kezelese
-    # atmenet_csoport: (1,2): a
-    for (honnan, hova), szimbolum in atmenet_csoport.items():
-        kimenet.append(f'    {honnan} -> {hova} [label = "{szimbolum}"];')
-
-    # kezdo allapot kezelese
-    # init: lathalatlan de innen kezdodik
+    kimenet.append('digraph G {')
+    kimenet.append('    ranksep = 0.5;')
+    kimenet.append('    nodesep = 0.5;')
+    kimenet.append('    rankdir = LR;')   #  vizsz elrendezes
+    kimenet.append('    node [shape = "circle", fontsize = "16"];')
+    kimenet.append('    fontsize = "10";')
+    kimenet.append('    compound = true;')
 
     for kezdo in kezdo_lista:
-        kimenet.append(f'    init -> {kezdo} [label = "start"];')
+        kimenet.append(f'    i{kezdo} [shape = point, style = invis];')
 
-    kimenet.append('    init [shape = point];')
+    # vegallapootoknal dupla kor
+    for veg in veg_lista:
+        kimenet.append(f'    {veg} [shape = doublecircle];')
+
+    # kezdo allapotok kezelese
+    for kezdo in kezdo_lista:
+        kimenet.append(f'    i{kezdo} -> {kezdo} [label = start];')
+
+    # atmentek
+    for (honnan, hova), szimbolum in atmenet_csoport.items():
+        kimenet.append(f'    {honnan} -> {hova} [label = {szimbolum}];')
+
+
     kimenet.append('}')
 
     return '\n'.join(kimenet)
 
+
 def main():
-    bemenet = 'input_A1.txt'
+    bemenet = 'form_I.A.1.txt'
     kimenet = 'output_A1.dot'
 
     sorok = read_file(bemenet)
