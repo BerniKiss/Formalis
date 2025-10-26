@@ -1,6 +1,9 @@
 def read_file(fajlnev):
-    with open(fajlnev, 'r') as f:
-        sorok = [sor.strip() for sor in f.readlines()]
+    f = open(fajlnev, 'r')
+    sorok = []
+    for sor in f:
+        sorok.append(sor.strip())
+    f.close()
     return sorok
 
 def parse_automata(sorok):
@@ -15,36 +18,32 @@ def parse_automata(sorok):
 
     return non_terminals, terminals, start_symbol, rules
 
-def convert_grammar_to_finite_automaton(non_terminals, terminals, start_symbol, rules):
-    transitions = []
-    final_states = {"Z"}
+def convert_to_automata(non_terminals, rules):
+    # a vegalappot z
+    finalS = 'Z'
+    new_non_terminals = non_terminals.copy()  # nemterminalisok masol
+    new_non_terminals.add(finalS)
+
+    atmenetek = []
+    # final_states = {finalS}
 
     for rule in rules:
-        lhs = rule[0]
+        if len(rule) == 3:
+            # ha 3 elembol all marad es jo
+            fromS = rule[0]
+            symbol = rule[1]
+            to = rule[2]
+            atmenetek.append((fromS, symbol, to))
+        elif len(rule) == 2:
+            # amikor vegallapotba
+            fromS = rule[0]
+            symbol = rule[1]
+            atmenetek.append((fromS, symbol, finalS))
 
-        if len(rule) == 2:
-            rhs = rule[1]
-            if rhs in terminals:
-                transitions.append((lhs, rhs, "Z"))
-            else:
-                transitions.append((lhs, rhs, ""))
+    return new_non_terminals, atmenetek, finalS
 
-        elif len(rule) == 1:
-            transitions.append((lhs, "epsilon", "Z"))
 
-        elif len(rule) == 3:
-            lhs = rule[0]
-            rhs = rule[1]
-            rhs2 = rule[2]
-
-            if rhs in terminals:
-                transitions.append((lhs, rhs, rhs2))
-            else:
-                transitions.append((lhs, rhs, rhs2))
-
-    return transitions, final_states
-
-def write_to_txt(non_terminals, terminals, start_symbol, transitions, final_states, kimenet_fajl):
+def write_to_txt(non_terminals, terminals, start_symbol, transitions, finalS, kimenet_fajl):
     with open(kimenet_fajl, 'w') as f:
         f.write(" ".join(sorted(non_terminals)) + "\n")
 
@@ -52,24 +51,28 @@ def write_to_txt(non_terminals, terminals, start_symbol, transitions, final_stat
 
         f.write(start_symbol + "\n")
 
-        f.write(" ".join(sorted(final_states)) + "\n")
+        f.write(" ".join(sorted(finalS)) + "\n")
 
         for transition in transitions:
-            if transition[2] == "":
-                f.write(f"{transition[0]} {transition[1]}\n")
-            else:
                 f.write(f"{transition[0]} {transition[1]} {transition[2]}\n")
-
-    print(f"Data written to {kimenet_fajl}")
+    f.close()
+    print(f"Data written into {kimenet_fajl}")
 
 def main():
     input_filename = 'form_I.A.2.txt'
-    output_filename = 'automata_2.txt'
+    output_filename = 'out_I.A_2.txt'
 
     sorok = read_file(input_filename)
     non_terminals, terminals, start_symbol, rules = parse_automata(sorok)
 
-    transitions, final_states = convert_grammar_to_finite_automaton(non_terminals, terminals, start_symbol, rules)
-    non_terminals.add("Z")
+    result = convert_to_automata(non_terminals, rules)
+    new_non_terminals = result[0]
+    atmenetek = result[1]
+    finalS = result[2]
 
-    write_to_txt(non_terminals, terminals, start_symbol, transitions, final_states, output_filename)
+    write_to_txt(new_non_terminals, terminals, start_symbol, atmenetek, finalS, output_filename)
+
+
+if __name__ == "__main__":
+    main()
+
