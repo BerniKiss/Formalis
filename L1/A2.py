@@ -12,9 +12,15 @@ def parse_automata(sorok):
     start_symbol = sorok[2].strip()
 
     rules = []
-    for sor in sorok[3:]:
-        parts = sor.split()
-        rules.append(parts)
+    i = 4
+    while i < len(sorok):
+        if sorok[i]:
+            rules.append(sorok[i].split())
+        i += 1
+
+    # for sor in sorok[3:]:
+    #    parts = sor.split()
+    #    rules.append(parts)
 
     return non_terminals, terminals, start_symbol, rules
 
@@ -25,7 +31,6 @@ def convert_to_automata(non_terminals, rules):
     new_non_terminals.add(finalS)
 
     atmenetek = []
-    # final_states = {finalS}
 
     for rule in rules:
         if len(rule) == 3:
@@ -45,13 +50,13 @@ def convert_to_automata(non_terminals, rules):
 
 def write_to_txt(non_terminals, terminals, start_symbol, transitions, finalS, kimenet_fajl):
     with open(kimenet_fajl, 'w') as f:
-        f.write(" ".join(sorted(non_terminals)) + "\n")
+        f.write(" ".join(non_terminals) + "\n")
 
-        f.write(" ".join(sorted(terminals)) + "\n")
+        f.write(" ".join(terminals) + "\n")
 
         f.write(start_symbol + "\n")
 
-        f.write(" ".join(sorted(finalS)) + "\n")
+        f.write(" ".join(finalS) + "\n")
 
         for transition in transitions:
                 f.write(f"{transition[0]} {transition[1]} {transition[2]}\n")
