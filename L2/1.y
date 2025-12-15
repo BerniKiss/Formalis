@@ -10,19 +10,25 @@ extern char* yytext;
 %}
 
 %union {
-    int intval;
-    double floatval;
-    char* strval;
+    int egesz;
+    double valos;
+    char* valt;
 }
 
-%token <intval> INTEGER
-%token <floatval> FLOAT
-%token <strval> IDENTIFIER
+%token <egesz> INTEGER
+%token <valos> FLOAT
+%token <valt> NEV
 
-%token EGESZ VALOS
-%token HA AKKOR KULONBEN AMIG
-%token KI BE
-%token LT GT
+%token EGESZ
+%token VALOS
+%token HA
+%token AKKOR
+%token KULONBEN
+%token AMIG
+%token KI
+%token BE
+%token LT
+%token GT
 %token EQ NE LE GE
 %token ASSIGN
 
@@ -40,54 +46,63 @@ extern char* yytext;
 %%
 
 program:
-    | statement program
+    | utasitasok program
     ;
 
-statement:
-    declaration ';'
-    | assignment ';'
-    | input_statement ';'
-    | output_statement ';'
-    | if_statement
-    | while_statement
+utasitasok:
+    egyszeru_utasitas ';' | complex_utasitas
     | error ';' {
-        yyerror("Hiba az utasitasban, folytatom a kovetkezo pontosvesszonal");
+        yyerror("Hiba az utasitasban");
         yyerrok;
     }
+    ;
+
+egyszeru_utasitas:
+    declaration | assignment | input | output
+    ;
+
+complex_utasitas:
+    if | while
     ;
 
 declaration:
-    EGESZ IDENTIFIER
-    | VALOS IDENTIFIER
-    | EGESZ error {
-        yyerror("Hianyzo vagy hibas valtozonev az egesz deklaracioban");
+    tipus NEV
+    | tipus NEV ASSIGN expression
+    | tipus error {
+        yyerror("Hianyzo vagy hibas valtozonev a deklaracioban");
         yyerrok;
     }
-    | VALOS error {
-        yyerror("Hianyzo vagy hibas valtozonev a valos deklaracioban");
-        yyerrok;
-    }
+    ;
+
+tipus:
+    EGESZ
+    | VALOS
     ;
 
 assignment:
-    IDENTIFIER ASSIGN expression
+    NEV ASSIGN expression
     ;
 
-input_statement:
-    BE IDENTIFIER
+input:
+    BE NEV
     ;
 
-output_statement:
+output:
     KI expression
     ;
 
-if_statement:
-    HA '(' condition ')' ':' statement %prec THEN
-    | HA '(' condition ')' ':' statement KULONBEN statement
+if:
+    HA '(' condition ')' ':' utasitas_blokk %prec THEN
+    | HA '(' condition ')' ':' utasitas_blokk KULONBEN ':' utasitas_blokk
     ;
 
-while_statement:
-    AMIG '(' condition ')' ':' statement
+while:
+    AMIG '(' condition ')' ':' utasitas_blokk
+    ;
+
+utasitas_blokk:
+    egyszeru_utasitas ';'
+    | complex_utasitas
     ;
 
 condition:
@@ -103,7 +118,7 @@ condition:
 expression:
     INTEGER
     | FLOAT
-    | IDENTIFIER
+    | NEV
     | expression '+' expression
     | expression '-' expression
     | expression '*' expression

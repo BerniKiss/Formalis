@@ -57,19 +57,19 @@ int column = 1;
 }
 
 [0-9]+\.[0-9]+ {
-    yylval.floatval = atof(yytext);
+    yylval.valos = atof(yytext);
     column += yyleng;
     return FLOAT;
 }
 
 [0-9]+ {
-    yylval.intval = atoi(yytext);
+    yylval.egesz = atoi(yytext);
     column += yyleng;
     return INTEGER;
 }
 
 [a-zA-Z][a-zA-Z0-9]* {
-    yylval.strval = strdup(yytext);
+    yylval.valt = strdup(yytext);
     column += yyleng;
     return NEV;
 }
