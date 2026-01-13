@@ -110,6 +110,16 @@ int column = 1;
     return ';';
 }
 
+"{" {
+    column += yyleng;
+    return '{';
+}
+
+"}" {
+    column += yyleng;
+    return '}';
+}
+
 "+" {
     column += yyleng;
     return '+';

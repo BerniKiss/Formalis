@@ -22,7 +22,6 @@ extern char* yytext;
 %token EGESZ
 %token VALOS
 %token HA
-%token AKKOR
 %token KULONBEN
 %token AMIG
 %token KI
@@ -39,37 +38,40 @@ extern char* yytext;
 %left LT GT EQ NE LE GE
 %left '+' '-'
 %left '*' '/'
-
-%nonassoc THEN
-%nonassoc KULONBEN
+%right NEG
 
 %%
 
 program:
-    | utasitasok program
+    | program utasitas
     ;
 
-utasitasok:
-    egyszeru_utasitas ';' | complex_utasitas
+utasitas:
+    egyszeru_utasitas ';'
+    | complex_utasitas
     | error ';' {
-        yyerror("Hiba az utasitasban");
+        fprintf(stderr, "Hiba az utasitasban - helyreallitas...\n");
         yyerrok;
     }
     ;
 
 egyszeru_utasitas:
-    declaration | assignment | input | output
+    declaration
+    | assignment
+    | input
+    | output
     ;
 
 complex_utasitas:
-    if | while
+    if_utasitas
+    | while_utasitas
     ;
 
 declaration:
     tipus NEV
     | tipus NEV ASSIGN expression
     | tipus error {
-        yyerror("Hianyzo vagy hibas valtozonev a deklaracioban");
+        fprintf(stderr, "Hianyzo vagy hibas valtozonev a deklaracioban\n");
         yyerrok;
     }
     ;
@@ -91,18 +93,23 @@ output:
     KI expression
     ;
 
-if:
-    HA '(' condition ')' ':' utasitas_blokk %prec THEN
-    | HA '(' condition ')' ':' utasitas_blokk KULONBEN ':' utasitas_blokk
+if_utasitas:
+    HA '(' condition ')' blokk
+    | HA '(' condition ')' blokk KULONBEN blokk
     ;
 
-while:
-    AMIG '(' condition ')' ':' utasitas_blokk
+while_utasitas:
+    AMIG '(' condition ')' blokk
     ;
 
-utasitas_blokk:
-    egyszeru_utasitas ';'
-    | complex_utasitas
+blokk:
+    '{' utasitas_lista '}'
+    | '{' '}'
+    ;
+
+utasitas_lista:
+    utasitas
+    | utasitas_lista utasitas
     ;
 
 condition:
@@ -124,7 +131,7 @@ expression:
     | expression '*' expression
     | expression '/' expression
     | '(' expression ')'
-    | '-' expression %prec '*'
+    | '-' expression %prec NEG
     ;
 
 %%
