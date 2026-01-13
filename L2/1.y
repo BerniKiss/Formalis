@@ -30,11 +30,15 @@ extern char* yytext;
 %token GT
 %token EQ NE LE GE
 %token ASSIGN
+%token AND OR NOT
 
 %define parse.error verbose
 
 %start program
 
+%left OR
+%left AND
+%right NOT
 %left LT GT EQ NE LE GE
 %left '+' '-'
 %left '*' '/'
@@ -43,6 +47,7 @@ extern char* yytext;
 %%
 
 program:
+    /* üres program */
     | program utasitas
     ;
 
@@ -50,7 +55,7 @@ utasitas:
     egyszeru_utasitas ';'
     | complex_utasitas
     | error ';' {
-        fprintf(stderr, "Hiba az utasitasban - helyreallitas...\n");
+        fprintf(stderr, ">> Hibas utasitas - helyreallitas\n");
         yyerrok;
     }
     ;
@@ -71,7 +76,7 @@ declaration:
     tipus NEV
     | tipus NEV ASSIGN expression
     | tipus error {
-        fprintf(stderr, "Hianyzo vagy hibas valtozonev a deklaracioban\n");
+        fprintf(stderr, ">> Hianyzo vagy hibas valtozonev a deklaracioban\n");
         yyerrok;
     }
     ;
@@ -96,10 +101,18 @@ output:
 if_utasitas:
     HA '(' condition ')' blokk
     | HA '(' condition ')' blokk KULONBEN blokk
+    | HA '(' error ')' blokk {
+        fprintf(stderr, ">> Hibas feltetel az if utasitasban\n");
+        yyerrok;
+    }
     ;
 
 while_utasitas:
     AMIG '(' condition ')' blokk
+    | AMIG '(' error ')' blokk {
+        fprintf(stderr, ">> Hibas feltetel az amig utasitasban\n");
+        yyerrok;
+    }
     ;
 
 blokk:
@@ -120,6 +133,10 @@ condition:
     | expression LE expression
     | expression GE expression
     | LT expression GT expression
+    | condition AND condition
+    | condition OR condition
+    | NOT condition
+    | '(' condition ')'
     ;
 
 expression:
@@ -139,16 +156,17 @@ expression:
 int main() {
     printf("Szintaktikai elemzes indul...\n");
     if (yyparse() == 0) {
-        printf("OK!\n");
+        printf("\n=== OK! Sikeres elemzes ===\n");
     } else {
-        printf("Hiba tortent az elemzes soran.\n");
+        printf("\n=== Hiba tortent az elemzes soran ===\n");
     }
     return 0;
 }
 
 int yyerror(const char *s) {
-    fprintf(stderr, "Szintaktikai hiba a %d. sorban, %d. oszlopban: %s\n",
-            yylineno, column, s);
-    fprintf(stderr, "A hiba kozeleben: '%s'\n", yytext);
+    fprintf(stderr, "\n[SZINTAKTIKAI HIBA]\n");
+    fprintf(stderr, "  Hely: %d. sor, %d. oszlop\n", yylineno, column);
+    fprintf(stderr, "  Uzenet: %s\n", s);
+    fprintf(stderr, "  Token: '%s'\n", yytext);
     return 0;
 }

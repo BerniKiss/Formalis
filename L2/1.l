@@ -56,6 +56,21 @@ int column = 1;
     return GT;
 }
 
+"es" {
+    column += yyleng;
+    return AND;
+}
+
+"vagy" {
+    column += yyleng;
+    return OR;
+}
+
+"nem" {
+    column += yyleng;
+    return NOT;
+}
+
 [0-9]+\.[0-9]+ {
     yylval.valos = atof(yytext);
     column += yyleng;

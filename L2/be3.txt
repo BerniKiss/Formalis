@@ -1,0 +1,14 @@
+e x = 5;
+e y = 10;
+
+ha (x gt 3 es y lt 15) {
+    ki x;
+}
+
+ha (x == 5 vagy y == 10) {
+    ki y;
+}
+
+ha (nem (x lt 0)) {
+    ki x + y;
+}
